@@ -1,6 +1,7 @@
 package org.mockserver.logging;
 
 import com.google.common.annotations.VisibleForTesting;
+
 import org.mockserver.configuration.ConfigurationProperties;
 import org.mockserver.log.model.LogEntry;
 import org.mockserver.mock.HttpStateHandler;
@@ -84,7 +85,7 @@ public class MockServerLogger {
 
     public void logEvent(LogEntry logEntry) {
         if (logEntry.getType() == RECEIVED_REQUEST || isEnabled(logEntry.getLogLevel())) {
-            if (httpStateHandler != null) {
+            if (!ConfigurationProperties.replayMode() && httpStateHandler != null) {
                 httpStateHandler.log(logEntry);
             } else {
                 writeToSystemOut(logger, logEntry);

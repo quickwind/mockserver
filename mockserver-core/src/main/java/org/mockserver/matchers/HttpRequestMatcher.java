@@ -18,6 +18,8 @@ import static org.mockserver.log.model.LogEntry.LogMessageType.EXPECTATION_NOT_M
 import static org.mockserver.mappers.ContentTypeMapper.DEFAULT_HTTP_CHARACTER_SET;
 import static org.mockserver.model.NottableString.string;
 
+import org.mockserver.configuration.ConfigurationProperties;
+
 /**
  * @author jamesdbloom
  */
@@ -36,7 +38,7 @@ public class HttpRequestMatcher extends NotMatcher<HttpRequest> {
     private HttpRequest httpRequest;
     private RegexStringMatcher methodMatcher = null;
     private RegexStringMatcher pathMatcher = null;
-    private MultiValueMapMatcher queryStringParameterMatcher = null;
+    private Matcher<KeysToMultiValues> queryStringParameterMatcher = null;
     private BodyMatcher bodyMatcher = null;
     private MultiValueMapMatcher headerMatcher = null;
     private HashMapMatcher cookieMatcher = null;
@@ -92,7 +94,11 @@ public class HttpRequestMatcher extends NotMatcher<HttpRequest> {
     }
 
     private void withQueryStringParameters(Parameters parameters) {
-        this.queryStringParameterMatcher = new MultiValueMapMatcher(mockServerLogger, parameters, controlPlaneMatcher);
+        if (ConfigurationProperties.queryStringExactMatch()) {
+            this.queryStringParameterMatcher = new MultiValueMapExactMatcher(mockServerLogger, parameters, controlPlaneMatcher);
+        } else {
+            this.queryStringParameterMatcher = new MultiValueMapMatcher(mockServerLogger, parameters, controlPlaneMatcher);
+        }
     }
 
     private void withBody(Body body) {

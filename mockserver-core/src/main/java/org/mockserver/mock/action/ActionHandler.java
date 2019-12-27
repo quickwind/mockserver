@@ -9,6 +9,7 @@ import org.mockserver.client.SocketCommunicationException;
 import org.mockserver.client.SocketConnectionException;
 import org.mockserver.configuration.ConfigurationProperties;
 import org.mockserver.filters.HopByHopHeaderFilter;
+import org.mockserver.log.TimeService;
 import org.mockserver.log.model.LogEntry;
 import org.mockserver.logging.MockServerLogger;
 import org.mockserver.mock.Expectation;
@@ -193,9 +194,13 @@ public class ActionHandler {
                 returnNotFound(responseWriter, request);
 
             } else {
-
+                final long requestTime = TimeService.currentTimeMillis();
                 final InetSocketAddress remoteAddress = ctx != null ? ctx.channel().attr(REMOTE_SOCKET).get() : null;
-                final HttpRequest clonedRequest = hopByHopHeaderFilter.onRequest(request).withHeader(httpStateHandler.getUniqueLoopPreventionHeaderName(), httpStateHandler.getUniqueLoopPreventionHeaderValue());
+                HttpRequest tmpClonedRequest = hopByHopHeaderFilter.onRequest(request).withHeader(httpStateHandler.getUniqueLoopPreventionHeaderName(), httpStateHandler.getUniqueLoopPreventionHeaderValue());
+                if (ConfigurationProperties.proxyHostHeader()) {
+                    tmpClonedRequest.replaceHeader(new Header("Host", remoteAddress.getHostString() + ":" + remoteAddress.getPort()));
+                }
+                final HttpRequest clonedRequest = tmpClonedRequest;
                 final HttpForwardActionResult responseFuture = new HttpForwardActionResult(clonedRequest, httpClient.sendRequest(clonedRequest, remoteAddress, potentiallyHttpProxy ? 1000 : ConfigurationProperties.socketConnectionTimeout()), null, remoteAddress);
                 scheduler.submit(responseFuture, () -> {
                     try {
@@ -218,6 +223,22 @@ public class ActionHandler {
                                     .setArguments(request, notFoundResponse())
                             );
                         } else {
+                            if (ConfigurationProperties.recordDelay()) {
+                                response.withDelay(
+                                        Delay.milliseconds(
+                                                TimeService.currentTimeMillis() - requestTime));
+                            }
+                            if (response.getStatusCode() == 302 && ConfigurationProperties.proxyLocalRedirect()) {
+                                String location = response.getFirstHeader("Location");
+                                if (location.contains("//")) {
+                                    location = location.split("//")[1];
+                                    String newLocation = "/";
+                                    if (location.contains("/")) {
+                                        newLocation = location.substring(location.indexOf("/"));
+                                    } 
+                                    response.replaceHeader(new Header("Location", newLocation));
+                                }
+                            } 
                             mockServerLogger.logEvent(
                                 new LogEntry()
                                     .setType(FORWARDED_REQUEST)

@@ -202,7 +202,7 @@ public abstract class LifeCycle implements Stoppable {
         mockServerLogger.logEvent(
             new LogEntry()
                 .setType(SERVER_CONFIGURATION)
-                .setLogLevel(Level.INFO)
+                .setLogLevel(Level.WARN)
                 .setHttpRequest(request())
                 .setMessageFormat(message)
         );

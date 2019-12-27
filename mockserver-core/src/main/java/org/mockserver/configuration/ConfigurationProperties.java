@@ -87,6 +87,11 @@ public class ConfigurationProperties {
     private static final String MOCKSERVER_INITIALIZATION_JSON_PATH = "mockserver.initializationJsonPath";
     private static final String MOCKSERVER_PERSISTED_EXPECTATIONS_PATH = "mockserver.persistedExpectationsPath";
     private static final String MOCKSERVER_PERSIST_EXPECTATIONS = "mockserver.persistExpectations";
+    private static final String MOCKSERVER_RECORD_DELAY = "mockserver.recordDelay";
+    private static final String MOCKSERVER_REPLAY_MODE = "mockserver.replayMode";
+    private static final String MOCKSERVER_PROXY_HOST_HEADER = "mockserver.proxyHostHeader";
+    private static final String MOCKSERVER_PROXY_LOCAL_REDIRECT = "mockserver.proxyLocalRedirect";
+    private static final String MOCKSERVER_QUERY_STRING_EXACT_MATCH = "mockserver.queryStringExactMatch";
 
     private static final Properties PROPERTIES = readPropertyFile();
     private static final Set<String> ALL_SUBJECT_ALTERNATIVE_DOMAINS = Sets.newConcurrentHashSet();
@@ -580,6 +585,46 @@ public class ConfigurationProperties {
 
     public static void persistExpectations(boolean enable) {
         System.setProperty(MOCKSERVER_PERSIST_EXPECTATIONS, "" + enable);
+    }
+    
+    public static boolean recordDelay() {
+        return Boolean.parseBoolean(readPropertyHierarchically(MOCKSERVER_RECORD_DELAY, "MOCKSERVER_RECORD_DELAY", "" + true));
+    }
+
+    public static void recordDelay(boolean enable) {
+        System.setProperty(MOCKSERVER_RECORD_DELAY, "" + enable);
+    }
+    
+    public static boolean replayMode() {
+        return Boolean.parseBoolean(readPropertyHierarchically(MOCKSERVER_REPLAY_MODE, "MOCKSERVER_REPLAY_MODE", "" + false));
+    }
+
+    public static void replayMode(boolean enable) {
+        System.setProperty(MOCKSERVER_REPLAY_MODE, "" + enable);
+    }
+    
+    public static boolean proxyHostHeader() {
+        return Boolean.parseBoolean(readPropertyHierarchically(MOCKSERVER_PROXY_HOST_HEADER, "MOCKSERVER_PROXY_HOST_HEADER", "" + true));
+    }
+
+    public static void proxyHostHeader(boolean enable) {
+        System.setProperty(MOCKSERVER_PROXY_HOST_HEADER, "" + enable);
+    }
+    
+    public static boolean proxyLocalRedirect() {
+        return Boolean.parseBoolean(readPropertyHierarchically(MOCKSERVER_PROXY_LOCAL_REDIRECT, "MOCKSERVER_PROXY_LOCAL_REDIRECT", "" + true));
+    }
+
+    public static void proxyLocalRedirect(boolean enable) {
+        System.setProperty(MOCKSERVER_PROXY_LOCAL_REDIRECT, "" + enable);
+    }
+    
+    public static boolean queryStringExactMatch() {
+        return Boolean.parseBoolean(readPropertyHierarchically(MOCKSERVER_QUERY_STRING_EXACT_MATCH, "MOCKSERVER_QUERY_STRING_EXACT_MATCH", "" + true));
+    }
+
+    public static void queryStringExactMatch(boolean enable) {
+        System.setProperty(MOCKSERVER_QUERY_STRING_EXACT_MATCH, "" + enable);
     }
 
     public static String persistedExpectationsPath() {
